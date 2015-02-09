@@ -29,6 +29,7 @@
   "src/instance/mdv.js",
   "src/instance/base.js",
   "src/instance/styles.js",
+  "src/instance/pubsub.js",
   "src/declaration/polymer.js",
   "src/declaration/path.js",
   "src/declaration/styles.js",

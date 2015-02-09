@@ -145,6 +145,13 @@
       this.takeAttributes();
       // add event listeners
       this.addHostListeners();
+      // SmartComposition Extension
+      // BEGIN
+      // add pubsub functionality
+      if (this.isSmartComponent) {
+        this._pubsub_init();
+      }
+      // END
     },
 
     // system entry point, do not override
@@ -201,6 +208,12 @@
           this.async('domReady');
         }
       }
+      // SmartComposition Extension
+      // BEGIN
+      if (this.isSmartComponent) {
+        this._pubsub_activateListener();
+      }
+      // END
     },
 
      /**
@@ -233,6 +246,12 @@
       if (this.leftView) {
         this.leftView();
       }
+      // SmartComposition Extension
+      // BEGIN
+      if (this.isSmartComponent) {
+        this._pubsub_deactivateListener();
+      }
+      // END
     },
 
     /**

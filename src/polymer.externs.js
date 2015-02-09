@@ -39,6 +39,12 @@ PolymerElement.prototype.domReady = function() {};
 /** On detached from the DOM callback. */
 PolymerElement.prototype.detached = function() {};
 
+// SmartComposition Extension
+// BEGIN
+/** On received message. */
+PolymerElement.prototype.messageReceived = function(message) {};
+// END
+
 /**
  * Callback fired when an attribute on the element has been added, changed, or
  * removed.
