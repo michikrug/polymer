@@ -9,6 +9,7 @@
 
     _pubsub_init: function() {
       if (typeof this._pubsub_messageHandler === 'function') return;
+      this._pubsub_topics = [];
       this._pubsub_id = this._pubsub_namespace + Math.random().toString(36).substr(2, 17);
       this._pubsub_messageHandler = (function(evt) {
         var message = evt.data;

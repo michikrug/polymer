@@ -120,6 +120,13 @@
             'prior to Polymer upgrading the element. This may result in ' +
             'incorrect binding types.');
       }
+      // SmartComposition Extension
+      // BEGIN
+      // add pubsub functionality
+      if (this.isSmartComponent) {
+        this._pubsub_init();
+      }
+      // END
       this.created();
       this.prepareElement();
       if (!this.ownerDocument.isStagingDocument) {
@@ -145,13 +152,6 @@
       this.takeAttributes();
       // add event listeners
       this.addHostListeners();
-      // SmartComposition Extension
-      // BEGIN
-      // add pubsub functionality
-      if (this.isSmartComponent) {
-        this._pubsub_init();
-      }
-      // END
     },
 
     // system entry point, do not override
