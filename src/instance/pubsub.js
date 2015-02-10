@@ -5,6 +5,7 @@
   var pubsub = {
 
     _pubsub_listening: true,
+    _pubsub_publishing: true,
 
     _pubsub_init: function() {
       if (typeof this._pubsub_messageHandler === 'function') return this;
@@ -57,6 +58,7 @@
     },
 
     _pubsub_sendMessage: function(topic, data, token) {
+      if (!this._pubsub_publishing) return this;
       var d;
       if (typeof topic === 'object') {
         token = data;
