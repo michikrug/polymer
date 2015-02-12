@@ -27,23 +27,23 @@
     _pubsub_subscribe: function(topic, handler) {
       if (!topic || topic.length === 0) return this;
       if (typeof handler !== 'function') handler = this.messageReceived;
-      if (!this._pubsub_subscriptions[topic]) this._pubsub_subscriptions[topic] = [];
-      if (!~this._pubsub_subscriptions[topic].indexOf(handler)) this._pubsub_subscriptions[topic].push({ handler: handler, token: null });
+      var subs = this._pubsub_subscriptions[topic] || (this._pubsub_subscriptions[topic] = []);
+      if (!~subs.indexOf(handler)) subs.push({ handler: handler, token: null });
       return this;
     },
 
     _pubsub_unsubscribe: function(topic, handler) {
-      if (!topic || topic.length === 0 || !this._pubsub_subscriptions[topic]) return this;
+      if (!topic || topic.length === 0) return this;
       if (typeof handler !== 'function') handler = this.messageReceived;
-      var found = -1;
-      for (var index = 0, len = this._pubsub_subscriptions[topic].length; index < len; index++) {
-        var current = this._pubsub_subscriptions[topic][index];
+      var subs = this._pubsub_subscriptions[topic] || [], found = -1;
+      for (var index = 0, len = subs.length; index < len; index++) {
+        var current = subs[index];
         if (current.handler === handler) {
           found = index;
           break;
         }
       }
-      if (~found) this._pubsub_subscriptions[topic].splice(found, 1);
+      if (~found) subs.splice(found, 1);
       return this;
     },
 
