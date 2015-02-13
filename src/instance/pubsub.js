@@ -27,8 +27,7 @@
     _pubsub_subscribe: function(topic, handler) {
       if (!topic || topic.length === 0) return this;
       if (typeof handler !== 'function') handler = this.messageReceived;
-      var subs = this._pubsub_subscriptions[topic] || (this._pubsub_subscriptions[topic] = []);
-      if (!~subs.indexOf(handler)) subs.push({ handler: handler, token: null });
+      (this._pubsub_subscriptions[topic] || (this._pubsub_subscriptions[topic] = [])).push({ handler: handler, token: null });
       return this;
     },
 
@@ -36,14 +35,12 @@
       if (!topic || topic.length === 0) return this;
       if (typeof handler !== 'function') handler = this.messageReceived;
       var subs = this._pubsub_subscriptions[topic] || [], found = -1;
-      for (var index = 0, len = subs.length; index < len; index++) {
-        var current = subs[index];
+      if (subs.some(function(current, index) {
         if (current.handler === handler) {
           found = index;
-          break;
+          return true;
         }
-      }
-      if (~found) subs.splice(found, 1);
+      })) subs.splice(found, 1);
       return this;
     },
 
@@ -59,19 +56,16 @@
 
     _pubsub_sendMessage: function(topic, data, token) {
       if (!this._pubsub_publishing) return this;
-      var d;
+      var d = { topic: topic, data: data };
       if (typeof topic === 'object') {
         token = data;
         d = topic;
-      } else {
-        d = { topic: topic, data: data };
       }
-      if (!token) token = Math.random().toString(36).substr(2, 17);
       window.postMessage({
         type: NAMESPACE + 'message',
         data: d,
         origin: this._pubsub_id,
-        token: token
+        token: token || Math.random().toString(36).substr(2, 17)
       }, window.location.origin);
       return this;
     },
