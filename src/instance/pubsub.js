@@ -12,7 +12,7 @@
       this._pubsub_id = NAMESPACE + Math.random().toString(36).substr(2, 17);
       this._pubsub_subscriptions = {};
       this._pubsub_messageHandler = (function(evt) {
-        var message = evt.data;
+        var message = evt.detail;
         if (!this._pubsub_listening) return;
         if (!message.type || message.type !== NAMESPACE + 'message' || message.origin === this._pubsub_id) return;
         this._pubsub_subscriptions[message.data.topic] && this._pubsub_subscriptions[message.data.topic].forEach(function(current) {
@@ -45,12 +45,12 @@
     },
 
     _pubsub_activateListener: function() {
-      window.addEventListener('message', this._pubsub_messageHandler);
+      window.addEventListener('pubsub', this._pubsub_messageHandler);
       return this;
     },
 
     _pubsub_deactivateListener: function() {
-      window.removeEventListener('message', this._pubsub_messageHandler);
+      window.removeEventListener('pubsub', this._pubsub_messageHandler);
       return this;
     },
 
@@ -61,12 +61,12 @@
         token = data;
         d = topic;
       }
-      window.postMessage({
+      window.dispatchEvent(new CustomEvent('pubsub', { detail: {
         type: NAMESPACE + 'message',
         data: d,
         origin: this._pubsub_id,
         token: token || Math.random().toString(36).substr(2, 17)
-      }, window.location.origin);
+      }}));
       return this;
     },
 
