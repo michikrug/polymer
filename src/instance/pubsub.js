@@ -27,7 +27,9 @@
     _pubsub_subscribe: function(topic, handler) {
       if (!topic || topic.length === 0) return this;
       if (typeof handler !== 'function') handler = this.messageReceived;
-      (this._pubsub_subscriptions[topic] || (this._pubsub_subscriptions[topic] = [])).push({ handler: handler, token: null });
+      var subs = this._pubsub_subscriptions[topic] || (this._pubsub_subscriptions[topic] = []);
+      if (subs.length < 1) window.addEventListener('pubsub.' + topic, this._pubsub_messageHandler);
+      subs.push({ handler: handler, token: null });
       return this;
     },
 
@@ -41,16 +43,21 @@
           return true;
         }
       })) subs.splice(found, 1);
+      if (subs.length < 1) window.removeEventListener('pubsub.' + topic, this._pubsub_messageHandler);
       return this;
     },
 
     _pubsub_activateListener: function() {
-      window.addEventListener('pubsub', this._pubsub_messageHandler);
+      for (topic in this._pubsub_subscriptions) {
+        window.addEventListener('pubsub.' + topic, this._pubsub_messageHandler);
+      }
       return this;
     },
 
     _pubsub_deactivateListener: function() {
-      window.removeEventListener('pubsub', this._pubsub_messageHandler);
+      for (topic in this._pubsub_subscriptions) {
+        window.removeEventListener('pubsub.' + topic, this._pubsub_messageHandler);
+      }
       return this;
     },
 
@@ -61,12 +68,19 @@
         token = data;
         d = topic;
       }
-      window.dispatchEvent(new CustomEvent('pubsub', { detail: {
+      if (typeof d.topic !== 'string') throw('Error: topic must be of type "string"');
+      var topicParts = ['pubsub'], message = {
         type: NAMESPACE + 'message',
         data: d,
         origin: this._pubsub_id,
         token: token || Math.random().toString(36).substr(2, 17)
-      }}));
+      };
+      window.dispatchEvent(new CustomEvent('pubsub', { detail: message }));
+      d.topic.split('.').filter(function(n) { return n != ''; }).forEach(function(t) {
+        topicParts.push(t);
+        message.data.topic = topicParts.slice(1).join('.');
+        window.dispatchEvent(new CustomEvent(topicParts.join('.'), { detail: message }));
+      });
       return this;
     },
 
