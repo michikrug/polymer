@@ -30,6 +30,7 @@
   "src/instance/base.js",
   "src/instance/styles.js",
   "src/instance/pubsub.js",
+  "src/instance/interaction.js",
   "src/declaration/polymer.js",
   "src/declaration/path.js",
   "src/declaration/styles.js",

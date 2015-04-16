@@ -229,6 +229,13 @@
         this._pubsub_activateListener();
       }
       // END
+
+      // SmartComposition Extension
+      // BEGIN
+      if (this.isSmartComponent && this.addInteraction) {
+        this.addInteractionStuff();
+      }
+      // END
     },
 
      /**
