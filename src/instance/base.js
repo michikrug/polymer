@@ -134,6 +134,19 @@
       }
     },
 
+    presetData: function() {
+      var xDataElement = this.querySelector('script[type="text/x-data"]');
+      var textContent = xDataElement && xDataElement.textContent.trim();
+      if (textContent) {
+        try {
+          var textContentObject = JSON.parse(textContent);
+          Object.getOwnPropertyNames(textContentObject).forEach(function(prop) {
+            if (this.publish[prop] && this.publish[prop].presetable) this[prop] = textContentObject[prop];
+          }, this);
+        } catch (e) {}
+      }
+    },
+
     // system entry point, do not override
     prepareElement: function() {
       if (this._elementPrepared) {
@@ -152,6 +165,8 @@
       this.takeAttributes();
       // add event listeners
       this.addHostListeners();
+      // 
+      this.presetData();
     },
 
     // system entry point, do not override
