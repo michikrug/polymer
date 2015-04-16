@@ -156,13 +156,7 @@
               li.classList.add('current');
             } else {
               li.on('click', function() {
-                var state = {};
-                if (_this.publish) {
-                  Object.getOwnPropertyNames(_this.publish).forEach(function(prop) {
-                    state[prop] = this[prop];
-                  }, _this);
-                }
-                window.SynchronizationService.sendMessage('move-tile', { client: this.getAttribute('data-client-id'), type: _this.tagName.toLowerCase(), width: _this.style.width, height: _this.style.height, state: state, content: _this.innerHTML });
+                window.SynchronizationService.sendMessage('move-tile', { client: this.getAttribute('data-client-id'), type: _this.tagName.toLowerCase(), width: _this.style.width, height: _this.style.height, state: _this.getState(), content: _this.innerHTML });
                 _this.remove();
               });
             }

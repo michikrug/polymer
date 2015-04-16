@@ -134,6 +134,7 @@
       }
     },
 
+    // parse and set data from markup
     presetData: function() {
       var xDataElement = this.querySelector('script[type="text/x-data"]');
       var textContent = xDataElement && xDataElement.textContent.trim();
@@ -145,6 +146,23 @@
           }, this);
         } catch (e) {}
       }
+    },
+
+    // get state object by collecting all published properties
+    getState: function() {
+      var state = {};
+      this.publish && Object.getOwnPropertyNames(this.publish).forEach(function(prop) {
+        state[prop] = this[prop];
+      }, this);
+      return state;
+    },
+
+    // set state by setting properties to given values
+    setState: function(state) {
+      state && Object.getOwnPropertyNames(state).forEach(function(prop) {
+        if (this.publish[prop]) this[prop] = state[prop];
+      }, this);
+      return this;
     },
 
     // system entry point, do not override
@@ -165,7 +183,7 @@
       this.takeAttributes();
       // add event listeners
       this.addHostListeners();
-      // 
+      // parse and set data from markup
       this.presetData();
     },
 
