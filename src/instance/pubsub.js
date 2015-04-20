@@ -61,7 +61,7 @@
       return this;
     },
 
-    _pubsub_sendMessage: function(topic, data, token) {
+    _pubsub_publish: function(topic, data, token) {
       if (!this._pubsub_publishing) return this;
       var d = { topic: topic, data: data };
       if (typeof topic === 'object') {
