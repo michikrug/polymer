@@ -250,8 +250,8 @@
 
       // SmartComposition Extension
       // BEGIN
-      if (this.isSmartComponent && this.addInteraction) {
-        this.addInteractionStuff();
+      if (this.isSmartComponent && this.isInteractive) {
+        this.addToolbar();
       }
       // END
     },

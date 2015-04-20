@@ -2,7 +2,7 @@
 
   var interaction = {
 
-    addInteractionStuff: function() {
+    addToolbar: function() {
       var _this = this;
 
       var qS = function(selector) {
