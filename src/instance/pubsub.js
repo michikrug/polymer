@@ -9,7 +9,7 @@
 
     _pubsub_init: function() {
       if (typeof this._pubsub_messageHandler === 'function') return this;
-      this._pubsub_id = NAMESPACE + Math.random().toString(36).substr(2, 17);
+      this._pubsub_id = Math.random().toString(36).substr(2, 17);
       this._pubsub_subscriptions = {};
       this._pubsub_messageHandler = (function(evt) {
         var message = evt.detail;
