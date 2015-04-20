@@ -4,6 +4,7 @@
 
     addToolbar: function() {
       var _this = this;
+      var tbId = '#toolbar_' + _this._pubsub_id;
 
       var qS = function(selector) {
         return _this.shadowRoot.querySelector(selector);
@@ -30,18 +31,19 @@
 
       if (this.shadowRoot.children.length === 0) return;
 
-      if (qS('.handle')) return;
+      if (qS(tbId)) return;
 
-      var handleDiv = document.createElement('div');
-      handleDiv.className = 'handle';
-      handleDiv.innerHTML = '<div class="buttons left"><div class="listen button">L</div><div class="publish button">P</div></div><div class="buttons right"><div class="clients button"><span>v</span><ul class="dropdown"></ul></div><div class="close button">X</div></div>';
-      this.shadowRoot.appendChild(handleDiv);
+      var toolbarDiv = document.createElement('div');
+      toolbarDiv.setAttribute('id', tbId.substr(1));
+      toolbarDiv.className = 'toolbar';
+      toolbarDiv.innerHTML = '<div class="buttons left"><div class="listen button">L</div><div class="publish button">P</div></div><div class="buttons right"><div class="clients button"><span>v</span><ul class="dropdown"></ul></div><div class="close button">X</div></div>';
+      this.shadowRoot.appendChild(toolbarDiv);
 
       var style = document.createElement('style');
       style.appendChild(document.createTextNode(''));
       _this.shadowRoot.appendChild(style);
       style.sheet.insertRule(":host { position: relative; }", 0);
-      style.sheet.insertRule(".handle { \
+      style.sheet.insertRule(tbId + " { \
   font-family: sans-serif; \
   top: 0; \
   display: none; \
@@ -53,14 +55,13 @@
   font-size: 12px; \
   position: absolute; \
 }", 0);
-      style.sheet.insertRule(".handle > span { line-height: 25px; }", 0);
-      style.sheet.insertRule(".buttons { \
+      style.sheet.insertRule(tbId + " .buttons { \
   position: absolute; \
   top: 3px; \
 }", 0);
-      style.sheet.insertRule(".buttons.right { right: 0; }", 0);
-      style.sheet.insertRule(".buttons.left { left: 4px; }", 0);
-      style.sheet.insertRule(".button { \
+      style.sheet.insertRule(tbId + " .buttons.right { right: 0; }", 0);
+      style.sheet.insertRule(tbId + " .buttons.left { left: 4px; }", 0);
+      style.sheet.insertRule(tbId + " .button { \
   width: 18px; \
   height: 18px; \
   border: 1px solid #ddd; \
@@ -72,9 +73,10 @@
   margin-right: 4px; \
   font-size: 10px; \
 }", 0);
-      style.sheet.insertRule(".button:hover { border: 1px inset #fff; }", 0);
-      style.sheet.insertRule(".button.disabled { color: #aaa; }", 0);
-      style.sheet.insertRule(".button > .dropdown { \
+      style.sheet.insertRule(tbId + " .button.disabled { color: #aaa; }", 0);
+      style.sheet.insertRule(tbId + " .button:hover { border: 1px inset #fff; }", 0);
+      style.sheet.insertRule(tbId + " .button:hover > .dropdown { display: block; }", 0);
+      style.sheet.insertRule(tbId + " .button > .dropdown { \
   display: none; \
   position: absolute; \
   width: auto; \
@@ -84,8 +86,7 @@
   padding: 8px 0 0 0; \
   text-align: left; \
 }", 0);
-      style.sheet.insertRule(".button:hover > .dropdown { display: block; }", 0);
-      style.sheet.insertRule(".button > .dropdown > li { \
+      style.sheet.insertRule(tbId + " .button > .dropdown > li { \
   width: auto; \
   min-width: 160px; \
   line-height: 22px; \
@@ -95,19 +96,19 @@
   padding: 0 5px; \
   border-bottom: 0; \
 }", 0);
-      style.sheet.insertRule(".button > .dropdown > li.current { color: #999; }", 0);
-      style.sheet.insertRule(".button > .dropdown > li:last-child { border-bottom: 1px solid #ddd; }", 0);
-      style.sheet.insertRule(".button > .dropdown > li:hover { background: rgb(220,220,220); }", 0);
-      style.sheet.insertRule(".button > .dropdown > li.current:hover { background: rgb(245,245,245); }", 0);
+      style.sheet.insertRule(tbId + " .button > .dropdown > li.current { color: #999; }", 0);
+      style.sheet.insertRule(tbId + " .button > .dropdown > li:last-child { border-bottom: 1px solid #ddd; }", 0);
+      style.sheet.insertRule(tbId + " .button > .dropdown > li:hover { background: rgb(220,220,220); }", 0);
+      style.sheet.insertRule(tbId + " .button > .dropdown > li.current:hover { background: rgb(245,245,245); }", 0);
 
-      var closeButton = qS('.handle .close.button');
+      var closeButton = qS(tbId + ' .close.button');
       if (closeButton) {
         closeButton.on('click', function() {
           _this.remove();
         });
       }
 
-      var listenButton = qS('.handle .listen.button');
+      var listenButton = qS(tbId + ' .listen.button');
       if (listenButton) {
         if (this._pubsub_listening) {
           listenButton.classList.remove('disabled');
@@ -124,7 +125,7 @@
         });
       }
 
-      var publishingButton = qS('.handle .publish.button');
+      var publishingButton = qS(tbId + ' .publish.button');
       if (publishingButton) {
         if (this._pubsub_publishing) {
           publishingButton.classList.remove('disabled');
@@ -141,12 +142,20 @@
         });
       }
 
-      var clientsButton = qS('.handle .clients.button');
+      var clientsButton = qS(tbId + ' .clients.button');
       if (clientsButton) {
-        clientsButton.on('mouseenter click', function() {
-          if (!window.SynchronizationService) return;
-          var dd = this.querySelector('.dropdown');
-          dd.innerHTML = '';
+        clientsButton.on('mouseenter click', createClientsList);
+        toolbarDiv.on('mouseenter', createClientsList);
+        createClientsList();
+      }
+
+      function createClientsList() {
+        if (!window.SynchronizationService) return;
+        var dd = qS(tbId + ' .clients.button .dropdown');
+        if (!dd) return;
+        dd.innerHTML = '';
+        if (window.SynchronizationService.Clients.length > 1) {
+          clientsButton.classList.remove('disabled'); 
           window.SynchronizationService.Clients.forEach(function(client) {
             var li = document.createElement('li');
             li.setAttribute('data-client-id', client.id);
@@ -156,21 +165,35 @@
               li.classList.add('current');
             } else {
               li.on('click', function() {
-                window.SynchronizationService.sendMessage('move-tile', { client: this.getAttribute('data-client-id'), type: _this.tagName.toLowerCase(), width: _this.style.width, height: _this.style.height, state: _this.getState(), content: _this.innerHTML });
-                _this.remove();
+                sendComponent(this.getAttribute('data-client-id'), _this);
               });
             }
             dd.appendChild(li);
           });
+        } else {
+          clientsButton.classList.add('disabled'); 
+        }
+      }
+
+      function sendComponent(clientId, component) {
+        if (!window.SynchronizationService) return;
+        window.SynchronizationService.sendMessage('move-tile', {
+          client:  clientId,
+          type:    component.tagName.toLowerCase(),
+          width:   component.style.width,
+          height:  component.style.height,
+          state:   component.getState(),
+          content: component.innerHTML
         });
+        component.remove();
       }
 
       this.on('mouseover', function() {
         clearTimeout(_this.timer);
-        _this.timer = setTimeout(function() { qS('.handle').style.display = 'block'; }, 500);
+        _this.timer = setTimeout(function() { qS(tbId).style.display = 'block'; }, 500);
       }).on('mouseout', function() {
         clearTimeout(_this.timer);
-        _this.timer = setTimeout(function() { qS('.handle').style.display = 'none'; }, 750);
+        _this.timer = setTimeout(function() { qS(tbId).style.display = 'none'; }, 750);
       });
 
       function makeDraggable() {
@@ -184,7 +207,7 @@
             _this.style.opacity = 1;
           }
         }).draggable('disable');
-        qS('.handle').on('mouseover', function(e) {
+        qS(tbId).on('mouseover', function(e) {
           if (e.toElement.className.indexOf('button') > -1) {
             $(_this).draggable('disable');
           } else {
