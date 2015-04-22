@@ -36,25 +36,32 @@
       var toolbarDiv = document.createElement('div');
       toolbarDiv.setAttribute('id', tbId.substr(1));
       toolbarDiv.className = 'toolbar';
-      toolbarDiv.innerHTML = '<div class="buttons left"><div class="listen button">L</div><div class="publish button">P</div></div><div class="buttons right"><div class="clients button"><span>v</span><ul class="dropdown"></ul></div><div class="close button">X</div></div>';
+      toolbarDiv.innerHTML = '<div class="buttons left"><div class="listen button">L</div><div class="publish button">P</div></div><div class="buttons right"><div class="clients button"><span>v</span><ul class="dropdown"></ul></div><div class="maximize button">F</div><div class="close button">X</div></div>';
       this.shadowRoot.appendChild(toolbarDiv);
 
       var style = document.createElement('style');
       style.appendChild(document.createTextNode(''));
       _this.shadowRoot.appendChild(style);
-      style.sheet.insertRule(":host { position: relative; }", 0);
+      if (navigator.userAgent.toLowerCase().indexOf('firefox') === -1) {
+        style.sheet.insertRule(":host { position: relative; }", 0);
+        addStyle();
+      } else {
+        setTimeout(addStyle, 200);
+      }
+
+      function addStyle() {
       style.sheet.insertRule(tbId + " { \
   font-family: sans-serif; \
   top: 0; \
   display: none; \
   height: 25px; \
   width: 100%; \
-  cursor: move; \
   text-align: center; \
   background: rgba(250,250,250,.7); \
   font-size: 12px; \
   position: absolute; \
 }", 0);
+      style.sheet.insertRule(tbId + ".draggable { cursor: move; }", 0);
       style.sheet.insertRule(tbId + " .buttons { \
   position: absolute; \
   top: 3px; \
@@ -100,6 +107,14 @@
       style.sheet.insertRule(tbId + " .button > .dropdown > li:last-child { border-bottom: 1px solid #ddd; }", 0);
       style.sheet.insertRule(tbId + " .button > .dropdown > li:hover { background: rgb(220,220,220); }", 0);
       style.sheet.insertRule(tbId + " .button > .dropdown > li.current:hover { background: rgb(245,245,245); }", 0);
+      }
+
+      var maximizeButton = qS(tbId + ' .maximize.button');
+      if (maximizeButton) {
+        maximizeButton.on('click', function() {
+          maximize('*');
+        });
+      }
 
       var closeButton = qS(tbId + ' .close.button');
       if (closeButton) {
@@ -150,29 +165,26 @@
       }
 
       function createClientsList() {
-        if (!window.SynchronizationService) return;
+        clientsButton.classList.add('disabled');
         var dd = qS(tbId + ' .clients.button .dropdown');
         if (!dd) return;
         dd.innerHTML = '';
-        if (window.SynchronizationService.Clients.length > 1) {
-          clientsButton.classList.remove('disabled'); 
-          window.SynchronizationService.Clients.forEach(function(client) {
-            var li = document.createElement('li');
-            li.setAttribute('data-client-id', client.id);
-            var t = document.createTextNode(client.name + ' (' + client.type + ')');
-            li.appendChild(t);
-            if (window.SynchronizationService.Id === client.id) {
-              li.classList.add('current');
-            } else {
-              li.on('click', function() {
-                sendComponent(this.getAttribute('data-client-id'), _this);
-              });
-            }
-            dd.appendChild(li);
-          });
-        } else {
-          clientsButton.classList.add('disabled'); 
-        }
+        if (!window.SynchronizationService || window.SynchronizationService.Clients.length < 2) return;
+        clientsButton.classList.remove('disabled'); 
+        window.SynchronizationService.Clients.forEach(function(client) {
+          var li = document.createElement('li');
+          li.setAttribute('data-client-id', client.id);
+          var t = document.createTextNode(client.name + ' (' + client.type + ')');
+          li.appendChild(t);
+          if (window.SynchronizationService.Id === client.id) {
+            li.classList.add('current');
+          } else {
+            li.on('click', function() {
+              sendComponent(this.getAttribute('data-client-id'), _this);
+            });
+          }
+          dd.appendChild(li);
+        });
       }
 
       function sendComponent(clientId, component) {
@@ -196,6 +208,26 @@
         _this.timer = setTimeout(function() { qS(tbId).style.display = 'none'; }, 750);
       });
 
+      function maximize() {
+        if (!_this.hasFullScreenHandler) {
+          _this.hasFullScreenHandler = true;
+          var f = function() { _this.dispatchEvent(new Event('resize')); };
+          document.addEventListener('MSFullscreenChange', f);
+          document.addEventListener('mozfullscreenchange', f);
+          document.addEventListener('webkitfullscreenchange', f);
+          document.addEventListener('fullscreenchange', f);
+        }
+        if (_this.requestFullScreen) {
+          _this.requestFullScreen();
+        } else if (_this.msRequestFullscreen) {
+          _this.msRequestFullscreen();
+        } else if (_this.mozRequestFullScreen) {
+          _this.mozRequestFullScreen();
+        } else if (_this.webkitRequestFullScreen) {
+          _this.webkitRequestFullScreen();
+        }
+      }
+
       function makeDraggable() {
         $(_this).draggable({
           start: function() {
@@ -207,15 +239,23 @@
             _this.style.opacity = 1;
           }
         }).draggable('disable');
-        qS(tbId).on('mouseover', function(e) {
-          if (e.toElement.className.indexOf('button') > -1) {
-            $(_this).draggable('disable');
-          } else {
+        qS(tbId).on('mouseover', function() {
+          if (_this.isDraggable) {
             $(_this).draggable('enable');
+            qS(tbId).classList.add('draggable');
           }
         }).on('mouseout', function() {
+          qS(tbId).classList.remove('draggable');
           $(_this).draggable('disable');
         });
+        var btns = _this.shadowRoot.querySelectorAll(tbId + ' .buttons .button');
+        for (var i = 0; i < btns.length; i++) {
+          btns[i].on('mouseover', function(e) {
+            e.stopPropagation();
+            qS(tbId).classList.remove('draggable');
+            $(_this).draggable('disable');
+          });
+        }
       }
 
       if (typeof $ === 'function' && $.ui) {
