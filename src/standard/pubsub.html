@@ -38,7 +38,24 @@
       }).bind(this);
     },
 
-    _subscribe: function(topic, handler) {
+     // get state object by collecting all published properties
+    getState: function() {
+      var state = {};
+      this.properties && Object.getOwnPropertyNames(this.properties).forEach(function(prop) {
+        state[prop] = this[prop];
+      }, this);
+      return state;
+    },
+
+    // set state by setting properties to given values
+    setState: function(state) {
+      state && Object.getOwnPropertyNames(state).forEach(function(prop) {
+        if (this.properties[prop]) this[prop] = state[prop];
+      }, this);
+      return this;
+    },
+
+    subscribe: function(topic, handler) {
       if (!this.isSmartComponent) return this;
       if (!topic || topic.length === 0) return this;
       if (typeof handler !== 'function') handler = this.messageReceived;
@@ -48,7 +65,7 @@
       return this;
     },
 
-    _unsubscribe: function(topic, handler) {
+    unsubscribe: function(topic, handler) {
       if (!this.isSmartComponent) return this;
       if (!topic || topic.length === 0) return this;
       if (typeof handler !== 'function') handler = this.messageReceived;
