@@ -165,6 +165,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             }
             c = o.combinator;
             s = o.value;  
+          } else {
+            s = s.replace(SCOPE_JUMP, ' ');
           }
           return c + s;
         });
@@ -206,25 +208,37 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         return p$.join(PSEUDO_PREFIX);
       },
 
-      rootRule: function(rule) {
-        this._transformRule(rule, this._transformRootSelector);
+      documentRule: function(rule) {
+        // reset selector in case this is redone.
+        rule.selector = rule.parsedSelector;
+        this.normalizeRootSelector(rule);
+        if (!nativeShadow) {
+          this._transformRule(rule, this._transformDocumentSelector);
+        }
       },
 
-      _transformRootSelector: function(selector) {
+      normalizeRootSelector: function(rule) {
+        if (rule.selector === ROOT) {
+          rule.selector = 'body';
+        }
+      },
+
+      _transformDocumentSelector: function(selector) {
         return selector.match(SCOPE_JUMP) ?
-          this._transformComplexSelector(selector) :
-          selector.trim() + SCOPE_ROOT_SELECTOR;
+          this._transformComplexSelector(selector, SCOPE_DOC_SELECTOR) :
+          this._transformSimpleSelector(selector.trim(), SCOPE_DOC_SELECTOR);
       },
 
       SCOPE_NAME: 'style-scope'
     };
 
     var SCOPE_NAME = api.SCOPE_NAME;
-    var SCOPE_ROOT_SELECTOR = ':not([' + SCOPE_NAME + '])' + 
+    var SCOPE_DOC_SELECTOR = ':not([' + SCOPE_NAME + '])' + 
       ':not(.' + SCOPE_NAME + ')';
     var COMPLEX_SELECTOR_SEP = ',';
     var SIMPLE_SELECTOR_SEP = /(^|[\s>+~]+)([^\s>+~]+)/g;
     var HOST = ':host';
+    var ROOT = ':root';
     // NOTE: this supports 1 nested () pair for things like 
     // :host(:not([selected]), more general support requires
     // parsing which seems like overkill

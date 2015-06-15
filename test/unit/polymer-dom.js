@@ -494,7 +494,7 @@ suite('Polymer.dom', function() {
 
   test('Polymer.dom.childNodes is an array', function() {
     assert.isTrue(Array.isArray(Polymer.dom(document.body).childNodes));
-  });  
+  });
 
 });
 
@@ -743,5 +743,4 @@ suite('Polymer.dom non-distributed elements', function() {
     Polymer.dom(c1).appendChild(test);
     assert.notOk(Polymer.dom(test).getOwnerRoot(), 'getOwnerRoot incorrect for child moved from a root to no root');
   });
-
 });
